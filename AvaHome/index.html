@@ -1,0 +1,43 @@
+<!----------------------------------------------------------------------------------------------------------------------->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planet</title>
+    <link rel="stylesheet" href="css/index.css"> 
+</head>
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+<script src="app.js"></script>
+<!----------------------------------------------------------------------------------------------------------------------->
+<body>
+    <div class="header"></div>
+    <div class="wrapper" id="wrapper"></div> 
+    <div class="content-wrapper">
+<!----------------------------------------------------------------------------------------------------------------------->
+        <h1>Wallet</h1>
+        <br>
+        <!--<button id="backToSpaceButton" onclick="window.location.href='https://shoken.com/ava';">宇宙に戻る</button>-->
+        <br>
+        <div class="button-container">
+            <button id="connectButton">Connect MetaMask</button>
+            <br>
+        </div>
+        <br>
+        <br>
+        <p id="walletAddress"></p>
+        <p>残高 : <span id="tokenBalance"></span> MEOW</p>
+        <br>
+<!----------------------------------------------------------------------------------------------------------------------->
+        <button id="getTokenButton">滞在を記録する</button>
+	    <br>
+        <br>
+        <div class="button-group">
+            <button id="nftButton" style="display: none;">Purchase NFT</button>
+            <br>
+            <button id="purchaseButton" style="display: none;">Select Products</button>
+        </div>
+    </div>
+</body>
+</html>
+<!----------------------------------------------------------------------------------------------------------------------->
