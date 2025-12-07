@@ -1,0 +1,240 @@
+<!------------------------------------------------------------------------------------------------------------------->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Walk</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+<!------------------------------------------------------------------------------------------------------------------->
+    <style>
+     * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* --- ボディ（①の radial 背景 + Inter） ----------------------- */
+body {
+    font-family: 'Inter', sans-serif;
+    background-image: radial-gradient(circle at 50% 0%, #f0f9ff, #e0e7ff 75%);
+    color: #323946;
+    text-align: center;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* --- wrapper（背景ぼかし + 明るさ調整） ----------------------- */
+.wrapper {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    backdrop-filter: blur(18px);
+}
+
+/* --- content-wrapper（①の glass-card デザイン） ----------------------- */
+.content-wrapper,
+.content2-wrapper,
+.content3-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 92%;
+    max-width: 650px;
+    padding: 1.5rem;
+    margin: 15px auto;
+
+    background: rgba(255, 255, 255, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 1rem;
+    backdrop-filter: blur(14px);
+
+    box-shadow:
+        0 20px 25px -5px rgba(0,0,0,0.10),
+        0 8px 10px -6px rgba(0,0,0,0.10);
+
+    transition: background 0.4s ease;
+}
+
+.content-wrapper:hover,
+.content2-wrapper:hover {
+    background: rgba(255, 255, 255, 0.75);
+}
+
+/* content2-wrapper（マップ用高さ調整） */
+.content2-wrapper {
+    height: 70%;
+    position: relative;
+    padding: 0;
+    overflow: hidden;
+}
+
+.content3-wrapper {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+/* --- タイトル（①の muted blue）----------------------- */
+h1 {
+    font-size: 1.9rem;
+    font-weight: 600;
+    color: hsl(253, 15%, 25%);
+    margin-bottom: 1.2rem;
+    letter-spacing: -0.02em;
+}
+
+/* --- テキスト（①の muted gray）----------------------- */
+p {
+    font-size: 1.1rem;
+    color: #475569;
+    margin: 8px 0;
+}
+
+#walletAddress {
+    font-size: 0.9rem;
+    color: #475569;
+}
+
+/* --- ボタン配置 ----------------------- */
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+/* --- ボタン（①の “暗めスレート + シャドウ”） ----------------------- */
+button {
+    background-color: hsl(250, 6%, 20%);
+    border: none;
+    color: white;
+
+    padding: 0.65rem 1.4rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border-radius: 0.75rem;
+
+    cursor: pointer;
+    transition: all 0.25s ease;
+
+    box-shadow:
+        0 10px 15px -3px rgba(0,0,0,0.10),
+        0 4px 6px -4px rgba(0,0,0,0.10);
+}
+
+button:hover {
+    background-color: hsl(247, 7%, 28%);
+    transform: scale(1.04);
+    box-shadow: 0 12px 18px -3px rgba(0,0,0,0.15);
+}
+
+button:active {
+    transform: scale(0.96);
+}
+
+/* --- NFT画像（ガラスカードに馴染む軽い影） ----------------------- */
+#image_display {
+    display: none;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 90px;
+    height: 90px;
+    border-radius: 8px;
+    object-fit: cover;
+
+    border: 1px solid rgba(255,255,255,0.7);
+    box-shadow:
+        0 6px 12px rgba(0,0,0,0.15);
+    z-index: 10;
+}
+
+#image_display2 {
+    display: none;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+
+    border-radius: 0.75rem;
+}
+
+/* --- マップのスタイル ----------------------- */
+#map {
+    height: 100%;
+    width: 100%;
+    border-radius: 1rem;
+}
+
+/* --- 距離表示 ----------------------- */
+#distanceDisplay {
+    font-size: 1.4rem;
+    margin-top: 15px;
+    color: #334155;
+}
+
+/* --- 通知バナー（読みやすい淡黄色） ----------------------- */
+#notification-banner {
+    background-color: #fff8b3;
+    color: #1f2937;
+    font-weight: 500;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+    </style>
+</head>
+<!------------------------------------------------------------------------------------------------------------------->
+<body>
+    <div class="header"></div>
+    <div class="wrapper" id="wrapper">
+    <br>
+<!------------------------------------------------------------------------------------------------------------------->
+        <div class="content-wrapper">
+            <br>
+            <h1>ミャウ町に長期滞在しよう</h1>
+            <br>
+            <button id="backToSpaceButton" onclick="window.location.href='/AvaHome';">Homeに戻る</button>
+            <br>
+<!------------------------------------------------------------------------------------------------------------------->
+            <div class="button-container">
+                <button id="connectButton">残高更新</button>
+                <!--<button id="nftButton">NFTを表示</button>-->
+            </div>
+<!------------------------------------------------------------------------------------------------------------------->
+            <br>
+            <p id="walletAddress"></p>
+            <p>残高 : <span id="tokenBalance">0</span> MEOW</p>
+            <br>
+            <p id="statusMessage">スタートを押してください</p>
+            <p id="distanceDisplay">移動距離: <span id="distance">0</span> m</p>
+            <br>
+<!------------------------------------------------------------------------------------------------------------------->
+            <div class="button-container">
+                <button id="startButton">スタート</button>
+                <button id="stopButton" disabled>ストップ</button>
+            </div>
+            <br>
+        </div>
+<!------------------------------------------------------------------------------------------------------------------->
+        <div class="content2-wrapper">
+            <div id="map">
+                <img id="image_display" src=""> <!-- NFTの表示 -->
+                <img id="image_display2" src=""> <!-- NFTの表示 -->
+            </div>
+        </div>
+<!------------------------------------------------------------------------------------------------------------------->
+<!-- バナー通知用のコンテナ -->
+        <div id="notification-banner" style="display: none; position: fixed; top: 0; width: 100%; background-color: #f9ff8d; color: #000; text-align: center; padding: 10px; z-index: 1000; font-size: 16px;">
+            自販機を検知！NFCタグに携帯をかざしてNFTを獲得しよう！
+        </div>
+    </div>
+<!------------------------------------------------------------------------------------------------------------------->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="test2.js"></script>
+</body>
+</html>
+<!------------------------------------------------------------------------------------------------------------------->
